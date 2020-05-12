@@ -1,0 +1,70 @@
+import csv #library for reading .csv file where motor catalogue is stres
+import tkinter as tk #library for creating a GUI
+from tkinter import *
+
+class Motors():
+    def __init__(self): #constructor to use the information in the .csv file and fill them in for attributes
+        self.part_num=row[0]
+        self.vendor=row[1]
+        self.motor_type=row[2] #refers to AC or DC motors
+        self.motor_function=row[3] #refers to the motor's functionality, e.g. servo, vibration etc.
+        self.rated_volt=float(row[4])
+        self.rpm=int(row[5])
+        self.price=float(row[6])
+
+motors_dict={} #dictionary for storing all objects in the the Motors class
+
+with open('List of motors.csv', newline='') as csvfile:
+    csv_reader = csv.reader(csvfile, delimiter=',')
+    line_count=0;
+    for row in csv_reader:
+        if (line_count==0):
+            line_count += 1
+        else:
+            motor=Motors()
+            #populating the dictionary with each indiviual motor's details
+            motors_dict[motor.part_num]=[motor.vendor, motor.motor_type, motor.motor_function, motor.rated_volt, motor.rpm, motor.price]
+
+allowed_motors_dict={}
+
+def decision():
+    for part_num in motors_dict:
+        motor_info=motors_dict[part_num]
+        if (motor_info[1]==spec_type.get() and motor_info[2]==motor_function.get() and (float(budget.get())>motor_info[5] or 
+        float(budget.get())==motor_info[5]) and float(spec_volt.get())==motor_info[3] and (int(spec_rpm.get())<motor_info[4] or
+        int(spec_rpm.get())==motor_info[4])): #criterion for deciding if a motor is good enough. must be the same type, function
+        #and operating voltage and the the specification RPM and Budget must be greater than or equal to the motor's RPM and budget
+        #respectively
+            allowed_motors_dict[part_num]=motors_dict[part_num]
+    if (len(allowed_motors_dict)>0):
+        print ("Possible motors: ")
+        for key in allowed_motors_dict:
+            attributes=allowed_motors_dict[key]
+            print ("Part num: " + key + " Vendor: " + attributes[0])
+    else:
+        print ("There are no motors in the catalogue that fit your specs. Feel free to browse elsewhere on websites such as 
+        McMaster-Carr, DigiKey etc.")
+
+
+interface=tk.Tk() #creating the GUI
+#label for entry fields
+tk.Label(interface, text="Budget: ").grid(row=0)
+tk.Label(interface, text="Type: ").grid(row=1)
+tk.Label(interface, text="Function: ").grid(row=2)
+tk.Label(interface, text="Operating Voltage: ").grid(row=3)
+tk.Label(interface, text="RPM: ").grid(row=4)
+#entry objects
+budget=tk.Entry(interface)
+spec_type=tk.Entry(interface)
+motor_function=tk.Entry(interface)
+spec_volt=tk.Entry(interface)
+spec_rpm=tk.Entry(interface)
+#placement for entry objects
+budget.grid(row=0, column=1)
+spec_type.grid(row=1, column=1)
+motor_function.grid(row=2, column=1)
+spec_volt.grid(row=3, column=1)
+spec_rpm.grid(row=4, column=1)
+#button that takes the use to their recommended motors
+tk.Button(interface, text="Show", command=decision).grid(row=5)
+interface.mainloop()
